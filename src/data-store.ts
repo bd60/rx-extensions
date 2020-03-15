@@ -1,4 +1,4 @@
-import { Observable, isObservable } from 'rxjs';
+import { Observable, isObservable, combineLatest } from 'rxjs';
 
 import { StateStore, Modifier } from './state-store';
 import { map } from 'rxjs/operators';
@@ -8,16 +8,26 @@ export interface KeyedData<T> {
     [key:string]: T
 }
 
-interface UpdatePayload<T> {
+interface ItemUpdatePayload<T> {
     key: string;
     data: T | Observable<T>;
 }
 
+interface DataUpdatePayload<T> {
+    data: KeyedData<T> | Observable<KeyedData<T>>;
+}
 
 export class DataStore<T> extends StateStore<KeyedData<T>> {
 
-    private keyedDataModifier<T>(state: KeyedData<T>, payload: UpdatePayload<T>) {
+    private keyedDataModifier(state: KeyedData<T>, payload: ItemUpdatePayload<T>) {
         const mod = (v: T) => ({...state, ...{[payload.key]: v}});
+        return (isObservable(payload.data)) 
+            ? payload.data.pipe(map(v => mod(v))) 
+            : mod(payload.data);
+    }
+
+    private dataModifier(state: KeyedData<T>, payload: DataUpdatePayload<T>) {
+        const mod = (v: KeyedData<T>) => ({...state, ...v});
         return (isObservable(payload.data)) 
             ? payload.data.pipe(map(v => mod(v))) 
             : mod(payload.data);
@@ -28,15 +38,29 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
     }
 
     get(key: string) {
-        return this.select(key);
+        return this.select<T>(key);
+    }
+
+    getMany(keys: string[]) {
+        return combineLatest(
+            keys.map(key => this.get(key))
+        )
     }
 
     set(key: string, data: T | Observable<T>) {
         this.modify({key, data}, this.keyedDataModifier);
     }
 
+    setMany(data: KeyedData<T> | Observable<KeyedData<T>>) {
+        this.modify({data}, this.dataModifier)
+    }
+
     delete(key: string) {
         this.set(key, undefined)
+    }
+
+    deleteMany(keys: string[]) {
+        this.setMany(keys.reduce((data, key) => ({...data, ...{[key]: undefined}}), {}))
     }
 
     update<D>(key: string, modifier: Modifier<D, T>) {
@@ -51,7 +75,15 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
         this.modify(modifier, stateModifier);
     }
 
-    clear() {
+    updateMany<D>(modifier: Modifier<D, KeyedData<T>>) {
+        const stateModifier = (state: KeyedData<T>, payload: Modifier<D, KeyedData<T>>) => {
+            const modItems = payload.modifier(state, payload.payload);
+            return this.dataModifier(state, {data: modItems});
+        }
+        this.modify(modifier, stateModifier);
+    }
+
+    clearAll() {
         this.next({});
     }
 }
