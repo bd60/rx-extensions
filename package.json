@@ -1,19 +1,20 @@
 {
   "name": "rx-extensions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --mode development --watch",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bd60/rx-extensions.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Bryan Duva",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/bd60/rx-extensions/issues"
