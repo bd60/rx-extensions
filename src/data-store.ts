@@ -93,6 +93,6 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
     }
 
     reset(state: KeyedData<T> = {}) {
-        this.next(state);
+        super.reset(state);
     }
 }

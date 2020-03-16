@@ -33,6 +33,10 @@ stateStore.modify(myData$, modifier$);
 
 // get data with select, feed as many key arguments as needed for nested keys
 stateStore.select('data').subscribe(data => console.log('got data:' data));
+
+// calling next will reset the data modifier to whatever is fed as an argument
+// semantic reset method is available as a wrapper
+stateStore.reset(myNewState)
 ```
 
 ## Data Store

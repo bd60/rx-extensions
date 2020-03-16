@@ -41,4 +41,8 @@ export class StateStore<T> extends BehaviorSubject<T> {
     const modifier = (acc:T, value:T) => value;
     this.modify(value, modifier);
   }
+
+  reset(state: T) {
+      this.next(state)
+  }
 }

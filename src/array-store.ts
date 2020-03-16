@@ -37,6 +37,7 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
     private removeModifier(state: ArrayData<T>, index?: number) {
         return this.arrayRemoveAt(state, index)
     }
+
     constructor(initialState: ArrayData<T> = []) {
         super(initialState);
     }
@@ -82,8 +83,8 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
         this.removeAtIndex()
     }
 
-    empty() {
-        this.next([])
+    reset(state: ArrayData<T> = []) {
+        super.reset(state)
     }
 
     // replace() {
