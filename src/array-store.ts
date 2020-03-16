@@ -69,6 +69,11 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
         this.modify(index, this.removeModifier)
     }
 
+    // removes section?
+    slice() {
+
+    }
+
     shift() {
         this.removeAtIndex(0)
     }
@@ -77,7 +82,15 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
         this.removeAtIndex()
     }
 
+    empty() {
+        this.next([])
+    }
+
     // replace() {
+
+    // }
+
+    // replaceWhere() {
 
     // }
 
@@ -97,11 +110,19 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
 
     // }
 
-    getIndex(index: number) {
+    getIndex(index?: number) {
         return this.pipe(
-            map(arr => arr[index]),
+            map(arr => arr[index || arr.length - 1]),
             distinctUntilChanged()
         );
+    }
+
+    getFirst() {
+        return this.getIndex(0);
+    }
+
+    getLast() {
+        return this.getIndex();
     }
 
     find(predicate: ArrayPredicate<T>) {
