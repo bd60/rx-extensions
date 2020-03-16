@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const ROOT = path.resolve( __dirname, 'src' );
 const DESTINATION = path.resolve( __dirname, 'dist' );
@@ -33,5 +34,9 @@ module.exports = {
             }
         ]
     },
+
+    plugins: [
+        new CleanWebpackPlugin()
+    ]
 
 };
