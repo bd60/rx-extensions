@@ -86,7 +86,7 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
         this.modify({payload, modifier}, stateModifier);
     }
 
-    clearAll() {
-        this.next({});
+    reset(state: KeyedData<T> = {}) {
+        this.next(state);
     }
 }
