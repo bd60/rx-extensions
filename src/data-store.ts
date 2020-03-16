@@ -8,13 +8,16 @@ export interface KeyedData<T> {
     [key:string]: T
 }
 
+type KeyedDataInput<T> = KeyedData<T> | Observable<KeyedData<T>>;
+type DataInput<T> = T | Observable<T>;
+
 interface ItemUpdatePayload<T> {
     key: string;
-    data: T | Observable<T>;
+    data: DataInput<T>;
 }
 
 interface DataUpdatePayload<T> {
-    data: KeyedData<T> | Observable<KeyedData<T>>;
+    data: KeyedDataInput<T>;
 }
 
 export class DataStore<T> extends StateStore<KeyedData<T>> {
@@ -47,11 +50,11 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
         )
     }
 
-    set(key: string, data: T | Observable<T>) {
+    set(key: string, data: DataInput<T>) {
         this.modify({key, data}, this.keyedDataModifier);
     }
 
-    setMany(data: KeyedData<T> | Observable<KeyedData<T>>) {
+    setMany(data: KeyedDataInput<T>) {
         this.modify({data}, this.dataModifier)
     }
 
