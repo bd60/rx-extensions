@@ -1,3 +1,3 @@
 # Rx Extensions
 
-*A set of useful extensions for RxJS*
+*A set of useful extensions and operators for RxJS*

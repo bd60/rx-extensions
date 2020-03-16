@@ -1,6 +1,6 @@
 import { Observable, isObservable, combineLatest } from 'rxjs';
 
-import { StateStore, Modifier } from './state-store';
+import { StateStore, StateModifier, Modifier } from './state-store';
 import { map } from 'rxjs/operators';
 
 
@@ -66,7 +66,7 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
         this.setMany(keys.reduce((data, key) => ({...data, ...{[key]: undefined}}), {}))
     }
 
-    update<D>(key: string, modifier: Modifier<D, T>) {
+    update<D>(key: string, payload: D, modifier: StateModifier<D, T>) {
         const stateModifier = (state: KeyedData<T>, payload: Modifier<D,T>) => {
             const item = state[key];
             if (!item) {
@@ -75,15 +75,15 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
             const modItem = payload.modifier(item, payload.payload);
             return this.keyedDataModifier(state, {key, data: modItem});
         }
-        this.modify(modifier, stateModifier);
+        this.modify({payload, modifier}, stateModifier);
     }
 
-    updateMany<D>(modifier: Modifier<D, KeyedData<T>>) {
+    updateMany<D>(payload: D, modifier: StateModifier<D, KeyedData<T>>) {
         const stateModifier = (state: KeyedData<T>, payload: Modifier<D, KeyedData<T>>) => {
             const modItems = payload.modifier(state, payload.payload);
             return this.dataModifier(state, {data: modItems});
         }
-        this.modify(modifier, stateModifier);
+        this.modify({payload, modifier}, stateModifier);
     }
 
     clearAll() {
