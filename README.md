@@ -61,16 +61,16 @@ dataStore.update('dataKey', myUpdateData, myUpdateModifier);
 // delete keys with delete
 dataStore.delete('dataKey');
 
-// the above all also have `Many` variations that
+// the above all also have `Many` variations:
 dataStore.setMany({dataKey1: myData1, dataKey2: myData2})
 
 dataStore.getMany(['dataKey1', 'dataKey2']).subscribe(([myData1, myData2]) => console.log(myData1, myData2));
 
-// this gets the entire state and lets you make an update on it
-const myUpdateManyModifier = (state: {[key]: MyData}, data: MyUpdateManyData) =>{
+// updateMany takes an argument of an object with keys to update and the data to use in the update, and the modifier to run on each key
+const myUpdateManyModifier = (state: MyData, data: MyUpdateData) =>{
     return {...state, ...data};
 }
-dataStore.updateMany(myUpdateData, myUpdateManyModifier);
+dataStore.updateMany({dataKey1: myUpdateData1, dataKey2: myUpdateData2}, myUpdateManyModifier);
 
 dataStore.deleteMany(['dataKey1', 'dataKey2']);
 

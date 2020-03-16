@@ -66,24 +66,30 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
         this.setMany(keys.reduce((data, key) => ({...data, ...{[key]: undefined}}), {}))
     }
 
-    update<D>(key: string, payload: D, modifier: StateModifier<D, T>) {
-        const stateModifier = (state: KeyedData<T>, payload: Modifier<D,T>) => {
+    update<D>(key: string, data: D, modifier: StateModifier<D, T>) {
+        const stateModifier = (state: KeyedData<T>, payload: Modifier<D, T>) => {
             const item = state[key];
             if (!item) {
                 throw new Error('cannot call update on non existent key');
             }
-            const data = payload.modifier(item, payload.payload);
-            return this.keyedDataModifier(state, {key, data});
+            const d = payload.modifier(item, payload.payload);
+            return this.keyedDataModifier(state, {key, data: d});
         }
-        this.modify({payload, modifier}, stateModifier);
+        this.modify({payload: data, modifier}, stateModifier);
     }
 
-    updateMany<D>(payload: D, modifier: StateModifier<D, KeyedData<T>>) {
-        const stateModifier = (state: KeyedData<T>, payload: Modifier<D, KeyedData<T>>) => {
-            const data = payload.modifier(state, payload.payload);
-            return this.dataModifier(state, {data});
+    updateMany<D>(data: KeyedData<D>, modifier: StateModifier<D, T>) {
+        const stateModifier = (state: KeyedData<T>, payload: { payload: KeyedData<D>, modifier: StateModifier<D, T> }) => {
+            const d = Object.entries(payload.payload).reduce((acc, [key, modData]) => {
+                const item = state[key];
+                if (!item) {
+                    throw new Error('cannot call update on non existent key')
+                }
+                return Object.assign(acc, {[key]: payload.modifier(item, modData)})
+            }, {});
+            return this.dataModifier(state, {data: d});
         }
-        this.modify({payload, modifier}, stateModifier);
+        this.modify({payload: data, modifier}, stateModifier);
     }
 
     reset(state: KeyedData<T> = {}) {
