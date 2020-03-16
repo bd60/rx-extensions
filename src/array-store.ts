@@ -85,7 +85,6 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
 
     // }
 
-
     // remove() {
 
     // }
