@@ -36,8 +36,8 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
             : mod(payload.data);
     }
     
-    constructor() {
-        super({});
+    constructor(initialState: KeyedData<T> = {}) {
+        super(initialState);
     }
 
     get(key: string) {
@@ -72,16 +72,16 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
             if (!item) {
                 throw new Error('cannot call update on non existent key');
             }
-            const modItem = payload.modifier(item, payload.payload);
-            return this.keyedDataModifier(state, {key, data: modItem});
+            const data = payload.modifier(item, payload.payload);
+            return this.keyedDataModifier(state, {key, data});
         }
         this.modify({payload, modifier}, stateModifier);
     }
 
     updateMany<D>(payload: D, modifier: StateModifier<D, KeyedData<T>>) {
         const stateModifier = (state: KeyedData<T>, payload: Modifier<D, KeyedData<T>>) => {
-            const modItems = payload.modifier(state, payload.payload);
-            return this.dataModifier(state, {data: modItems});
+            const data = payload.modifier(state, payload.payload);
+            return this.dataModifier(state, {data});
         }
         this.modify({payload, modifier}, stateModifier);
     }
