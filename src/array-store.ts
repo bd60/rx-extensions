@@ -1,14 +1,14 @@
 import { Observable, isObservable } from 'rxjs';
 import { map, distinctUntilChanged } from 'rxjs/operators';
 
-import { StateStore } from './state-store'
+import { StateStore } from './state-store';
 
 export type ArrayData<T> = Array<T>;
 
 type ArrayInput<T> = Array<T> | Observable<Array<T>>;
 type ItemInput<T> = T | Observable<T>;
 
-type ArrayPredicate<T> = (item: T) => boolean
+type ArrayPredicate<T> = (item: T) => boolean;
 
 export class ArrayStore<T> extends StateStore<ArrayData<T>> {
 
@@ -35,7 +35,7 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
     }
 
     private removeModifier(state: ArrayData<T>, index?: number) {
-        return this.arrayRemoveAt(state, index)
+        return this.arrayRemoveAt(state, index);
     }
 
     constructor(initialState: ArrayData<T> = []) {
@@ -47,27 +47,27 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
     }
 
     concat(items: ArrayInput<T>) {
-        this.insertAtIndex(items)
+        this.insertAtIndex(items);
     }
 
     push(item: ItemInput<T>) {
         if (isObservable(item)) {
-            this.concat(item.pipe(map(i => [i])))
+            this.concat(item.pipe(map(i => [i])));
         } else {
-            this.concat([item])
+            this.concat([item]);
         }
     }
 
     unshift(item: ItemInput<T>) {
         if (isObservable(item)) {
-            this.insertAtIndex(item.pipe(map(i => [i])), 0)
+            this.insertAtIndex(item.pipe(map(i => [i])), 0);
         } else {
-            this.insertAtIndex([item], 0)
+            this.insertAtIndex([item], 0);
         }
     }
 
     removeAtIndex(index?: number) {
-        this.modify(index, this.removeModifier)
+        this.modify(index, this.removeModifier);
     }
 
     // removes section?
@@ -76,15 +76,15 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
     }
 
     shift() {
-        this.removeAtIndex(0)
+        this.removeAtIndex(0);
     }
 
     pop() {
-        this.removeAtIndex()
+        this.removeAtIndex();
     }
 
     reset(state: ArrayData<T> = []) {
-        super.reset(state)
+        super.reset(state);
     }
 
     // replace() {
@@ -130,7 +130,7 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
         return this.pipe(
             map(array => array.find(predicate)),
             distinctUntilChanged()
-        )
+        );
     }
 
     filter(predicate: ArrayPredicate<T>) {
@@ -142,6 +142,6 @@ export class ArrayStore<T> extends StateStore<ArrayData<T>> {
     sort(compareFn?: (a: T, b:T) => number) {
         return this.pipe(
             map(array => array.sort(compareFn))
-        )
+        );
     }
 }

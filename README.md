@@ -88,6 +88,22 @@ dataStore.reset()
 
 ## Operators
 
+### concatJoin
+
+*Like `forkJoin` but executes streams sequentially*
+
 ### batchJoin
 
-*`forkJoin` wrapper that executes streams in batches of a specified size, default 5*
+*Like `forkJoin` but executes streams sequentially in batches of a specified size, default 5*
+
+### pluckDistinct
+
+*combines `pluck` and `distinctUntilChanged`*
+
+### pluckManyLatest
+
+*plucks several keys and emits all when any of them change*
+
+### pluckManyMerge
+
+*plucks several keys and the key that changed when it changes, along with the key that changed*

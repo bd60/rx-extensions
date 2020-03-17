@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 
 
 export interface KeyedData<T> {
-    [key:string]: T
+    [key:string]: T;
 }
 
 type KeyedDataInput<T> = KeyedData<T> | Observable<KeyedData<T>>;
@@ -47,7 +47,7 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
     getMany(keys: string[]) {
         return combineLatest(
             keys.map(key => this.get(key))
-        )
+        );
     }
 
     set(key: string, data: DataInput<T>) {
@@ -55,15 +55,15 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
     }
 
     setMany(data: KeyedDataInput<T>) {
-        this.modify({data}, this.dataModifier)
+        this.modify({data}, this.dataModifier);
     }
 
     delete(key: string) {
-        this.set(key, undefined)
+        this.set(key, undefined);
     }
 
     deleteMany(keys: string[]) {
-        this.setMany(keys.reduce((data, key) => ({...data, ...{[key]: undefined}}), {}))
+        this.setMany(keys.reduce((data, key) => Object.assign(data, {[key]: undefined}), {}));
     }
 
     update<D>(key: string, data: D, modifier: StateModifier<D, T>) {
