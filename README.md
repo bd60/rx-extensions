@@ -86,7 +86,7 @@ dataStore.reset()
 
 *Specialized extension of StateStore for data that meets the interface `Array<T>`*
 
-## Operators
+## Utilities and Operators
 
 ### concatJoin
 

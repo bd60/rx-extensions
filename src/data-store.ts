@@ -29,7 +29,7 @@ export class DataStore<T> extends StateStore<KeyedData<T>> {
             : mod(payload.data);
     }
 
-    private dataModifier(state: KeyedData<T>, payload: DataUpdatePayload<T>) {
+    protected dataModifier(state: KeyedData<T>, payload: DataUpdatePayload<T>) {
         const mod = (v: KeyedData<T>) => ({...state, ...v});
         return (isObservable(payload.data)) 
             ? payload.data.pipe(map(v => mod(v))) 
