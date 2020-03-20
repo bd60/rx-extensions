@@ -82,9 +82,25 @@ dataStore.deleteMany(['dataKey1', 'dataKey2']);
 dataStore.reset()
 ```
 
+## Resource Store
+
+*Specialized extension of DataStore that deals with a remote resource*
+
+### Usage
+
+```javascript
+// two ways to use
+
+// 1. via construction that takes a function to fetch your remote resource
+
+const resourceStore = new ResourceStore
+```
+
 ## Array Store
 
 *Specialized extension of StateStore for data that meets the interface `Array<T>`*
+
+### Work In Progress... Documentation coming
 
 ## Utilities and Operators
 

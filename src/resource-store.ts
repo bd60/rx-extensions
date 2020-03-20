@@ -1,8 +1,7 @@
-import { Observable, isObservable, combineLatest, of, EMPTY } from 'rxjs';
+import { Observable, of, EMPTY } from 'rxjs';
 
-import { StateModifier, Modifier } from './state-store';
 import { DataStore, KeyedData } from './data-store';
-import { map, switchMap, mapTo } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 
 export type ResourceFunction<T, D> = (arg: D) => Observable<T>
 
