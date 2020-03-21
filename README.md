@@ -82,11 +82,66 @@ dataStore.deleteMany(['dataKey1', 'dataKey2']);
 dataStore.reset()
 ```
 
+## Resource Store
+
+*Specialized extension of DataStore that deals with a remote resource*
+
+### Usage
+
+```javascript
+// two ways to use
+
+// 1. via construction that takes a config with (optional) inistial state and a function to fetch the remote resource
+
+function getResource(url: string): Observable<MyType> {
+    return http.get(url);
+}
+
+const resourceStore = new ResourceStore<MyType, string>({getResource});
+
+// 2. or you may extend the AbstractResourceStore and provide a getResource function
+
+class MyResourceStore extends AbstractResourceStore<MyType, string> {
+    getResource(url: string) {
+        return http.get(url);
+    }
+}
+
+// both methods may define a key builder function as well in the case of more complex input:
+
+type MyInput = { id: string };
+function keyBuilder(input: MyInput) {
+    return input.id
+}
+
+const resourceStore = new ResourceStore<MyType, string>({getResource, keyBuilder});
+
+class MyResourceStore extends AbstractResourceStore<MyType, string> {
+    getResource(input: MyInput) {
+        return http.get('https://my.api.com/' + input.id);
+    }
+
+     keyBuilder(input: MyInput) {
+        return input.id
+    }
+}
+
+// the resource store provides a cacheGet method that will check the cache, if it's not there, it will call the getResource method and set it
+
+resourceStore.cacheGet(url).subsribe(v => console.log(v, "this resource was fetched from cache or remote!"))
+
+// it also provides a cacheSet method that gets the remote resource and populates the cache with the response
+
+resourceStore.cacheSet(url)
+```
+
 ## Array Store
 
 *Specialized extension of StateStore for data that meets the interface `Array<T>`*
 
-## Operators
+### Work In Progress... Documentation coming
+
+## Utilities and Operators
 
 ### concatJoin
 
