@@ -3,6 +3,10 @@ import { Observable, of, EMPTY } from 'rxjs';
 import { DataStore, KeyedData } from './data-store';
 import { switchMap } from 'rxjs/operators';
 
+function isFunction(obj: any): obj is Function {
+    return !!(obj && obj.constructor && obj.call && obj.apply);
+};
+
 export type ResourceFunction<T, D> = (arg: D) => Observable<T>
 
 export type KeyBuilder<D> = (arg: D) => string
@@ -13,11 +17,13 @@ export interface ResourceStoreConfig<T, D> {
     keyBuilder?: KeyBuilder<D>;
 }
 
-const defaultKeyBuilder = <D>(arg: D) => typeof arg === 'string' ? arg : JSON.stringify(arg);
+const defaultKeyBuilder = <D>(arg: D) => typeof arg === 'string' ? arg : (isFunction(arg.toString)) ? arg.toString() : JSON.stringify(arg);
 
 export abstract class AbstractResourceStore<T, D> extends DataStore<T> {
-    getResource: ResourceFunction<T, D>
-    keyBuilder: KeyBuilder<D>;
+    abstract getResource(arg: D): Observable<T>
+    keyBuilder(arg: D): string {
+        return defaultKeyBuilder(arg);
+    };
 
     constructor(initialState: KeyedData<T> = {}) {
         super(initialState);
@@ -43,6 +49,8 @@ export abstract class AbstractResourceStore<T, D> extends DataStore<T> {
 }
 
 export class ResourceStore<T, D> extends AbstractResourceStore<T, D> {
+    getResource: ResourceFunction<T, D>;
+    keyBuilder: KeyBuilder<D>;
     constructor(config: ResourceStoreConfig<T,D>) {
         super(config.initialState || {});
         this.getResource = config.getResource;
