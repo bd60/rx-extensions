@@ -1,6 +1,6 @@
-import { Subject, Observable, zip, forkJoin, of } from 'rxjs';
-import { scan, map, distinctUntilChanged, startWith, withLatestFrom, switchMap } from 'rxjs/operators';
-import {StateStore} from './state-store';
+import { Subject, Observable, forkJoin, of } from 'rxjs';
+import { map, withLatestFrom, switchMap } from 'rxjs/operators';
+import { StateStore } from './state-store';
 
 type CollectorFunction<T> = () => Partial<T>;
 type AsyncCollectorFunction<T> = () => Observable<Partial<T>>;
