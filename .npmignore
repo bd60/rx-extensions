@@ -1,1 +1,6 @@
 node_modules
+spec
+src
+.mocharc.json
+tsconfig.json
+webpack.config.json
