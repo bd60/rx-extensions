@@ -13,6 +13,8 @@ describe('ResourceStore', () => {
     //   }, null, done);
 
     //   store.complete();
+        expect(1).to.equal(1)
+        done()
     });
   });
 });
