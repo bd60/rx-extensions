@@ -1,10 +1,11 @@
 import { Subject, Observable, zip, forkJoin, of } from 'rxjs';
 import { scan, map, distinctUntilChanged, startWith, withLatestFrom, switchMap } from 'rxjs/operators';
+import {StateStore} from './state-store';
 
-type CollectorFunction<T> = () => Partial<T>
-type AsyncCollectorFunction<T> = () => Observable<Partial<T>>
+type CollectorFunction<T> = () => Partial<T>;
+type AsyncCollectorFunction<T> = () => Observable<Partial<T>>;
 
-type Collector<T> = [Array<CollectorFunction<T>>, Array<AsyncCollectorFunction<T>>]
+type Collector<T> = [Array<CollectorFunction<T>>, Array<AsyncCollectorFunction<T>>];
 
 export interface PullSubscription {
     unsubscribe: () => void
@@ -12,45 +13,20 @@ export interface PullSubscription {
 
 export class PullSubject<T extends object> extends Subject<T> {
 
-    private addCollectorSource = new Subject<CollectorFunction<T>>();
-    private addAsyncCollectorSource = new Subject<AsyncCollectorFunction<T>>();
-    private removeCollectorSource = new Subject<CollectorFunction<T> | AsyncCollectorFunction<T>>();
+    private collectorState = new StateStore<Collector<T>>([[], []]);
 
-    private collectors$: Observable<Collector<T>> = zip(this.addCollectorSource, 
-                                                        this.addAsyncCollectorSource, 
-                                                        this.removeCollectorSource).pipe(
-        scan((collectors: Collector<T>, [addCollector, addAsynCollector, removeCollector]) => {
-            if (addCollector) {
-                return [[...collectors[0], addCollector], collectors[1]]
-            } else if (addAsynCollector) {
-                return [collectors[0], [...collectors[1], addAsynCollector]]
-            } else if (removeCollector) {
-                const syncI = collectors[0].indexOf((removeCollector as CollectorFunction<T>))
-                const asyncI = collectors[1].indexOf((removeCollector as AsyncCollectorFunction<T>))
-                if (syncI > -1) {
-                    collectors[0].splice(syncI, 1)
-                } else if (asyncI > -1) {
-                    collectors[1].splice(asyncI, 1)
-                }
-                collectors = [collectors[0], collectors[1]];
-            }
-            return collectors
-        }, [[], []]),
-        distinctUntilChanged(),
-        startWith<Collector<T>>([[], []])
-    );
-
-    private pullSource = new Subject<void>();
+    private pullTrigger = new Subject<void>();
 
     constructor(
         collectorReducer: (collected: Partial<T>, collector: Partial<T>) => Partial<T> = (collected, collector) => ({...collected, ...collector}), 
-        reduceInit: Partial<T> = {}) {
-        super()
+        reduceInit: Partial<T> = {}
+    ) {
+        super();
 
-        this.pullSource.pipe(
-            withLatestFrom(this.collectors$),
+        this.pullTrigger.pipe(
+            withLatestFrom(this.collectorState),
             switchMap(([pull, [collectors, asyncCollectors]]) => {
-                const async$ = (asyncCollectors.length) ? forkJoin(asyncCollectors.map(c => c())) : of<Partial<T>[]>([])
+                const async$ = (asyncCollectors.length) ? forkJoin(asyncCollectors.map(c => c())) : of<Partial<T>[]>([]);
                 return async$.pipe(
                     map(collected => collected.reduce(collectorReducer, reduceInit)),
                     map(v => 
@@ -65,30 +41,38 @@ export class PullSubject<T extends object> extends Subject<T> {
         );
     }
 
-    private pullTrigger(addCollector?: CollectorFunction<T>, 
-                        addAsyncCollector?: AsyncCollectorFunction<T>, 
-                        removeCollector?: CollectorFunction<T> | AsyncCollectorFunction<T>) {
-        this.addCollectorSource.next(addCollector);
-        this.addAsyncCollectorSource.next(addAsyncCollector);
-        this.removeCollectorSource.next(removeCollector);
-    }
-
     private unpull(collector: CollectorFunction<T> | AsyncCollectorFunction<T>) {
-        this.pullTrigger(undefined, undefined, collector);
+        const modifier = (state: Collector<T>, payload: CollectorFunction<T> | AsyncCollectorFunction<T>) => {
+            const syncI = state[0].indexOf((payload as CollectorFunction<T>))
+            const asyncI = state[1].indexOf((payload as AsyncCollectorFunction<T>))
+            if (syncI > -1) {
+                state[0].splice(syncI, 1)
+            } else if (asyncI > -1) {
+                state[1].splice(asyncI, 1)
+            }
+            return ([state[0], state[1]] as Collector<T>);
+        }
+        this.collectorState.modify(collector, modifier)
     }
 
     pull(collector: CollectorFunction<T>): PullSubscription {
-        this.pullTrigger(collector, undefined, undefined);
+        const modifier = (state: Collector<T>, payload: CollectorFunction<T>) => {
+            return ([[...state[0], payload], state[1]] as Collector<T>);
+        }
+        this.collectorState.modify(collector, modifier)
         return { unsubscribe: () => this.unpull(collector) };
     }
 
-    pullAsync(collector$: AsyncCollectorFunction<T>) {
-        this.pullTrigger(undefined, collector$, undefined);
+    pullAsync(collector$: AsyncCollectorFunction<T>): PullSubscription {
+        const modifier = (state: Collector<T>, payload: AsyncCollectorFunction<T>) => {
+            return ([state[0], [...state[1], payload]] as Collector<T>);
+        }
+        this.collectorState.modify(collector$, modifier)
         return { unsubscribe: () => this.unpull(collector$) };
     }
 
     next() {
-        this.pullSource.next();
+        this.pullTrigger.next();
     }
 
 }
