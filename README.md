@@ -154,8 +154,8 @@ interface MyType {
     key2: number;
 }
 
-// declare like a normal subject, optionally declare with a collector reducer and initial reducer value
-// default collector reducer merges partials like {...collected, ...collector}, default init = {}
+// declare like a normal subject, optionally declare with a collector reducer
+// default collector reducer merges partials like {...collected, ...collector}
 const pullSubject = new PullSubject<MyType>();
 
 // use pull method to register a collector, which needs to return a partial type
@@ -173,7 +173,7 @@ pullSubject.subscribe(collected => {
     console.log('got the result', collected);
 });
 
-// trigger the collection with pull subject next (takes no value)
+// trigger the collection with pull subject next (you can pass initial or default values for the reducer here, defaults to {})
 pullSubject.next();
 
 // deregister a collector with the pull return value
