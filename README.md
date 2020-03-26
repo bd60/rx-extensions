@@ -155,7 +155,7 @@ interface MyType {
     key2: number;
 }
 
-// declare like a normal subject
+// declare like a normal subject, optionally declare with a collector reducer and initial reducer value
 const pullSubject = new PullSubject<MyType>();
 
 // use pull method to register a collector, which needs to return a partial type
@@ -163,7 +163,7 @@ pullSubject.pull(() => {
     return {key: 'value'};
 });
 
-// register async collectors with pullASync
+// register async collectors with pullASync (these MUST complete!)
 pullSubject.pullAsync(() => {
     return of({key2: 10});
 });

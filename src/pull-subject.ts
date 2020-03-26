@@ -40,7 +40,9 @@ export class PullSubject<T> extends Subject<T> {
 
     private pullSource = new Subject<void>();
 
-    constructor() {
+    constructor(
+        collectorReducer: (collected: Partial<T>, collector: Partial<T>) => Partial<T> = (collected, collector) => ({...collected, ...collector}), 
+        reduceInit: Partial<T> = {}) {
         super()
 
         this.pullSource.pipe(
@@ -48,11 +50,9 @@ export class PullSubject<T> extends Subject<T> {
             switchMap(([pull, [collectors, asyncCollectors]]) => {
                 const async$ = (asyncCollectors.length) ? forkJoin(asyncCollectors.map(c => c())) : of<Partial<T>[]>([])
                 return async$.pipe(
-                    map(collected => collected.reduce((coll: Partial<T>, c) => ({...coll, ...c}), {})),
+                    map(collected => collected.reduce(collectorReducer, reduceInit)),
                     map(v => 
-                        collectors.reduce((collected, collector) => {
-                            return {...collected, ...collector()}
-                        }, v)
+                        collectors.map(c => c()).reduce(collectorReducer, v)
                     )
                 );
             })
