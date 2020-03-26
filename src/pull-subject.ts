@@ -16,7 +16,9 @@ export class PullSubject<T extends object> extends Subject<T> {
     private addAsyncCollectorSource = new Subject<AsyncCollectorFunction<T>>();
     private removeCollectorSource = new Subject<CollectorFunction<T> | AsyncCollectorFunction<T>>();
 
-    private collectors$: Observable<Collector<T>> = zip(this.addCollectorSource, this.addAsyncCollectorSource, this.removeCollectorSource).pipe(
+    private collectors$: Observable<Collector<T>> = zip(this.addCollectorSource, 
+                                                        this.addAsyncCollectorSource, 
+                                                        this.removeCollectorSource).pipe(
         scan((collectors: Collector<T>, [addCollector, addAsynCollector, removeCollector]) => {
             if (addCollector) {
                 return [[...collectors[0], addCollector], collectors[1]]
@@ -63,23 +65,25 @@ export class PullSubject<T extends object> extends Subject<T> {
         );
     }
 
+    private pullTrigger(addCollector?: CollectorFunction<T>, 
+                        addAsyncCollector?: AsyncCollectorFunction<T>, 
+                        removeCollector?: CollectorFunction<T> | AsyncCollectorFunction<T>) {
+        this.addCollectorSource.next(addCollector);
+        this.addAsyncCollectorSource.next(addAsyncCollector);
+        this.removeCollectorSource.next(removeCollector);
+    }
+
     private unpull(collector: CollectorFunction<T> | AsyncCollectorFunction<T>) {
-        this.removeCollectorSource.next(collector)
-        this.addAsyncCollectorSource.next()
-        this.addCollectorSource.next()
+        this.pullTrigger(undefined, undefined, collector);
     }
 
     pull(collector: CollectorFunction<T>): PullSubscription {
-        this.addCollectorSource.next(collector);
-        this.addAsyncCollectorSource.next()
-        this.removeCollectorSource.next()
+        this.pullTrigger(collector, undefined, undefined);
         return { unsubscribe: () => this.unpull(collector) };
     }
 
     pullAsync(collector$: AsyncCollectorFunction<T>) {
-        this.addAsyncCollectorSource.next(collector$);
-        this.addCollectorSource.next()
-        this.removeCollectorSource.next()
+        this.pullTrigger(undefined, collector$, undefined);
         return { unsubscribe: () => this.unpull(collector$) };
     }
 
