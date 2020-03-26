@@ -15,20 +15,19 @@ export class PullSubject<T extends object> extends Subject<T> {
 
     private collectorState = new StateStore<Collector<T>>([[], []]);
 
-    private pullTrigger = new Subject<void>();
+    private pullTrigger = new Subject<Partial<T>>();
 
     constructor(
-        collectorReducer: (collected: Partial<T>, collector: Partial<T>) => Partial<T> = (collected, collector) => ({...collected, ...collector}), 
-        reduceInit: Partial<T> = {}
+        collectorReducer: (collected: Partial<T>, collector: Partial<T>) => Partial<T> = (collected, collector) => ({...collected, ...collector})
     ) {
         super();
 
         this.pullTrigger.pipe(
             withLatestFrom(this.collectorState),
-            switchMap(([pull, [collectors, asyncCollectors]]) => {
+            switchMap(([init, [collectors, asyncCollectors]]) => {
                 const async$ = (asyncCollectors.length) ? forkJoin(asyncCollectors.map(c => c())) : of<Partial<T>[]>([]);
                 return async$.pipe(
-                    map(collected => collected.reduce(collectorReducer, reduceInit)),
+                    map(collected => collected.reduce(collectorReducer, init)),
                     map(v => 
                         collectors.map(c => c()).reduce(collectorReducer, v)
                     )
@@ -71,8 +70,8 @@ export class PullSubject<T extends object> extends Subject<T> {
         return { unsubscribe: () => this.unpull(collector$) };
     }
 
-    next() {
-        this.pullTrigger.next();
+    next(defaultValue: Partial<T> = {}) {
+        this.pullTrigger.next(defaultValue);
     }
 
 }
