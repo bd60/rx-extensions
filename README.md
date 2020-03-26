@@ -149,13 +149,13 @@ resourceStore.cacheSet(url)
 
 ```javascript
 // using this interface
-
 interface MyType {
     key: string;
     key2: number;
 }
 
 // declare like a normal subject, optionally declare with a collector reducer and initial reducer value
+// default collector reducer merges partials like {...collected, ...collector}, default init = {}
 const pullSubject = new PullSubject<MyType>();
 
 // use pull method to register a collector, which needs to return a partial type

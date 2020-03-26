@@ -10,7 +10,7 @@ export interface PullSubscription {
     unsubscribe: () => void
 }
 
-export class PullSubject<T> extends Subject<T> {
+export class PullSubject<T extends object> extends Subject<T> {
 
     private addCollectorSource = new Subject<CollectorFunction<T>>();
     private addAsyncCollectorSource = new Subject<AsyncCollectorFunction<T>>();
