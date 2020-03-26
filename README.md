@@ -141,6 +141,49 @@ resourceStore.cacheSet(url)
 
 ### Work In Progress... Documentation coming
 
+## Pull Subject
+
+*Implements observer pattern to pull responses from observers and gather responses*
+
+### Usage
+
+```javascript
+// using this interface
+
+interface MyType {
+    key: string;
+    key2: number;
+}
+
+// declare like a normal subject
+const pullSubject = new PullSubject<MyType>();
+
+// use pull method to register a collector, which needs to return a partial type
+pullSubject.pull(() => {
+    return {key: 'value'};
+});
+
+// register async collectors with pullASync
+pullSubject.pullAsync(() => {
+    return of({key2: 10});
+});
+
+// subscribe to the pull subject to receive the merged result of all collectors
+pullSubject.subscribe(collected => {
+    console.log('got the result', collected);
+});
+
+// trigger the collection with pull subject next (takes no value)
+pullSubject.next();
+
+// deregister a collector with the pull return value
+const pullSub = pullSubject.pull(() => {
+    return {key: 'value'};
+});
+
+pullSub.unsubscribe();
+```
+
 ## Utilities and Operators
 
 ### concatJoin
